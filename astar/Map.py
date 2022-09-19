@@ -402,7 +402,7 @@ def aStar(map: Map_Obj,start: Node, goal: Node):
         print(it)
         it+=1
         for node in openlist:
-            # import pdb; pdb.set_traxce()
+            # import pdb; pdb.set_trace()
             # print("Openlist {}".format(openlist))
             # print("Node: {}".format(node))
             if node.cost < compare:
