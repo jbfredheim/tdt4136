@@ -363,7 +363,7 @@ class Node():
     parent : Node
         The parent node
     """
-    def __init__(self, pos: list[int, int], move: list[int,int], parent: Node = None):
+    def __init__(self, pos: list[int, int], move: list[int,int] = None, parent = None):
         self.pos = pos
         self.move = move
         self.parent = parent
@@ -374,41 +374,68 @@ class Node():
         self.cost = 0
 
     def __repr__(self):
-        return 'Node(' + str(self.pos) + ')'
-
-    def __eq__(self, other):
-        return self.pos == other.pos
-
+        return 'Node at ' + str(self.pos)
+    
     def __hash__(self):
         return hash(tuple(self.pos))
+    
+    def getPath(self):
+        moves = []
+        aNode = self
+        while(aNode.parent):
+            moves.append(aNode.move)
+            aNode = aNode.parent
+        moves.reverse()
+        return moves
+        
 
 moves = [[0,1],[0,-1],[1,0],[-1,0]] #up down right left
 
 def aStar(map: Map_Obj,start: Node, goal: Node):
+    debug = True
     print(start,goal)
     openlist = [start]
     closedlist = []
-    round = 0
-    comp = 100
+    it = 0
+    compare = 100
     while(openlist):
-        round+=1
+        print(it)
+        it+=1
         for node in openlist:
-            print("Node: {}".format(node))
+            # import pdb; pdb.set_traxce()
+            # print("Openlist {}".format(openlist))
+            # print("Node: {}".format(node))
             if node.cost < compare:
                 compare = node.cost
                 aNode = node
+            if debug:
+                print("openlist: {}, node: {}".format(openlist,aNode))
+                print("Node@: {}, Move: {}, Parent: {}, Depth: {}, h: {}, cost: {}".format(aNode.pos,aNode.move,aNode.parent,aNode.depth,aNode.h,aNode.cost))
             openlist.remove(aNode)
             closedlist.append(aNode)
-            for move in moves:
-                child = Node([aNode[0]+move[0],aNode[1]+move[1]],move,aNode)
-                if map.get_cell_value(child) == -1: #if wall, skip iteration
-                    continue
-                if map.get_goal_pos() == child:
-                    print("Found goal! Now figure out printing the path")
-                    return round
-                for aNode in openlist:
-                    if aNode.pos == child.pos:
-                        openlist.remove(aNode)
+        for move in moves:
+            child = Node([aNode.pos[0]+move[0],aNode.pos[1]+move[1]],move,aNode)
+            print("New child {} spawned from {} using move {})".format(child,aNode,move))
+            if map.get_cell_value(child.pos) == -1: #if wall, skip iteration
+                continue
+            if map.get_goal_pos() == child: #if goal, return path
+                print("Found goal! Now figure out printing the path")
+                return child.getPath()
+            for aNode in openlist:
+                if aNode.pos == child.pos and child.cost < aNode.cost:
+                    # print("openlist: {}, node: {}".format(openlist,aNode))
+                    print("Removing {} from openlist at line 427".format(aNode))
+                    openlist.remove(aNode)
+            for aNode in closedlist:
+                if aNode.pos == child.pos and child.cost < aNode.cost:
+                    print("Removing {} from closedlist at line 431".format(aNode))
+                    closedlist.remove(aNode)
+            child.h = (abs(child.pos[0]-goal.pos[0])+abs(child.pos[1]-goal.pos[1]))
+            child.cost = child.depth+child.h
+            print("Appending {} to openlist at line 435".format(child))
+            openlist.append(child)
+            
+            
 
             
 
@@ -416,4 +443,4 @@ def aStar(map: Map_Obj,start: Node, goal: Node):
 if __name__ == '__main__':
     map_obj = Map_Obj(task=1)
     start, goal = Node(map_obj.get_start_pos()), Node(map_obj.get_goal_pos())
-    aStar(map_obj,map_obj.start_pos, map_obj.goal_pos)
+    print(aStar(map_obj,start, goal))
