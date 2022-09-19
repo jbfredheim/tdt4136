@@ -374,7 +374,7 @@ class Node():
         self.cost = 0
 
     def __repr__(self):
-        return 'Node at ' + str(self.pos)
+        return 'N' + str(self.pos)
     
     def __hash__(self):
         return hash(tuple(self.pos))
@@ -387,53 +387,61 @@ class Node():
             aNode = aNode.parent
         moves.reverse()
         return moves
-        
+    
+    def simMove(self, move):
+        return [self.pos[0] + move[0], self.pos[1] + move[1]]
 
 moves = [[0,1],[0,-1],[1,0],[-1,0]] #up down right left
 
-def aStar(map: Map_Obj,start: Node, goal: Node):
+def aStar(state: Map_Obj,start: Node, goal: Node):
     debug = True
     print(start,goal)
     openlist = [start]
     closedlist = []
     it = 0
-    compare = 100
     while(openlist):
         print(it)
         it+=1
+        compare = 10000
         for node in openlist:
             # import pdb; pdb.set_trace()
             # print("Openlist {}".format(openlist))
             # print("Node: {}".format(node))
-            if node.cost < compare:
-                compare = node.cost
-                aNode = node
+            if node.cost < compare: #find the lowest cost node
+                compare = node.cost #set the lowest cost
+                aNode = node #set the node to the lowest cost node
             if debug:
+                print("DEBUG")
                 print("openlist: {}, node: {}".format(openlist,aNode))
                 print("Node@: {}, Move: {}, Parent: {}, Depth: {}, h: {}, cost: {}".format(aNode.pos,aNode.move,aNode.parent,aNode.depth,aNode.h,aNode.cost))
-            openlist.remove(aNode)
-            closedlist.append(aNode)
+                print("Attempting to move {} from open to closed".format(aNode))
+                print("END DEBUG")
+            try:    
+                openlist.remove(aNode)
+                closedlist.append(aNode)
+            except:
+                import pdb; pdb.set_trace()
         for move in moves:
             child = Node([aNode.pos[0]+move[0],aNode.pos[1]+move[1]],move,aNode)
             print("New child {} spawned from {} using move {})".format(child,aNode,move))
-            if map.get_cell_value(child.pos) == -1: #if wall, skip iteration
+            if state.get_cell_value(child.pos) == -1: #if wall, skip iteration
                 continue
-            if map.get_goal_pos() == child: #if goal, return path
+            if state.get_goal_pos() == child: #if goal, return path
                 print("Found goal! Now figure out printing the path")
                 return child.getPath()
-            for aNode in openlist:
-                if aNode.pos == child.pos and child.cost < aNode.cost:
+            for aNode in openlist: #For each node in openlist
+                if aNode.pos == child.pos and child.cost < aNode.cost: #If child is in openlist and has lower cost
                     # print("openlist: {}, node: {}".format(openlist,aNode))
-                    print("Removing {} from openlist at line 427".format(aNode))
-                    openlist.remove(aNode)
-            for aNode in closedlist:
-                if aNode.pos == child.pos and child.cost < aNode.cost:
-                    print("Removing {} from closedlist at line 431".format(aNode))
-                    closedlist.remove(aNode)
-            child.h = (abs(child.pos[0]-goal.pos[0])+abs(child.pos[1]-goal.pos[1]))
-            child.cost = child.depth+child.h
-            print("Appending {} to openlist at line 435".format(child))
-            openlist.append(child)
+                    print("Removing {} from openlist as a child with lower cost at same pos has been discovered".format(aNode))
+                    openlist.remove(aNode) #Remove node from openlist
+            for aNode in closedlist: #For each previously closed node
+                if aNode.pos == child.pos and child.cost < aNode.cost: #If child is in closedlist and has lower cost
+                    print("Removing {} from closedlist as child with lower cost at same pos has been discovered".format(aNode))
+                    closedlist.remove(aNode) #Remove node from closedlist
+            child.h = (abs(child.pos[0]-goal.pos[0])+abs(child.pos[1]-goal.pos[1])) #Calculate h
+            child.cost = child.depth+child.h #Calculate cost
+            print("Appending {} to openlist at line 435".format(child)) 
+            openlist.append(child) #Add child to openlist
             
             
 
