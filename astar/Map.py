@@ -394,13 +394,13 @@ class Node():
 moves = [[0,1],[0,-1],[1,0],[-1,0]] #up down right left
 
 def aStar(state: Map_Obj,start: Node, goal: Node):
-    debug = True
+    debug = False
     print(start,goal)
     openlist = [start]
     closedlist = []
     it = 0
     while(openlist):
-        print(it)
+        #print(it)
         it+=1
         compare = 10000
         for node in openlist:
@@ -416,31 +416,31 @@ def aStar(state: Map_Obj,start: Node, goal: Node):
                 print("Node@: {}, Move: {}, Parent: {}, Depth: {}, h: {}, cost: {}".format(aNode.pos,aNode.move,aNode.parent,aNode.depth,aNode.h,aNode.cost))
                 print("Attempting to move {} from open to closed".format(aNode))
                 print("END DEBUG")
-            try:    
-                openlist.remove(aNode)
-                closedlist.append(aNode)
-            except:
-                import pdb; pdb.set_trace()
+            # try:
+        openlist.remove(aNode)
+        closedlist.append(aNode)
+            # except:
+            #     import pdb; pdb.set_trace()
         for move in moves:
             child = Node([aNode.pos[0]+move[0],aNode.pos[1]+move[1]],move,aNode)
-            print("New child {} spawned from {} using move {})".format(child,aNode,move))
+            #print("New child {} spawned from {} using move {})".format(child,aNode,move))
             if state.get_cell_value(child.pos) == -1: #if wall, skip iteration
                 continue
-            if state.get_goal_pos() == child: #if goal, return path
-                print("Found goal! Now figure out printing the path")
+            if state.get_goal_pos() == child.pos: #if goal, return path
+                #print("Found goal! Now figure out printing the path")
                 return child.getPath()
             for aNode in openlist: #For each node in openlist
                 if aNode.pos == child.pos and child.cost < aNode.cost: #If child is in openlist and has lower cost
                     # print("openlist: {}, node: {}".format(openlist,aNode))
-                    print("Removing {} from openlist as a child with lower cost at same pos has been discovered".format(aNode))
+                    #print("Removing {} from openlist as a child with lower cost at same pos has been discovered".format(aNode))
                     openlist.remove(aNode) #Remove node from openlist
             for aNode in closedlist: #For each previously closed node
                 if aNode.pos == child.pos and child.cost < aNode.cost: #If child is in closedlist and has lower cost
-                    print("Removing {} from closedlist as child with lower cost at same pos has been discovered".format(aNode))
+                    #print("Removing {} from closedlist as child with lower cost at same pos has been discovered".format(aNode))
                     closedlist.remove(aNode) #Remove node from closedlist
             child.h = (abs(child.pos[0]-goal.pos[0])+abs(child.pos[1]-goal.pos[1])) #Calculate h
             child.cost = child.depth+child.h #Calculate cost
-            print("Appending {} to openlist at line 435".format(child)) 
+            #print("Appending {} to openlist at line 435".format(child)) 
             openlist.append(child) #Add child to openlist
             
             
@@ -452,3 +452,4 @@ if __name__ == '__main__':
     map_obj = Map_Obj(task=1)
     start, goal = Node(map_obj.get_start_pos()), Node(map_obj.get_goal_pos())
     print(aStar(map_obj,start, goal))
+    map_obj.show_map()
