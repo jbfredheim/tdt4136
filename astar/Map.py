@@ -339,7 +339,8 @@ class Map_Obj():
             ' : ': (96, 96, 96),   # darkgrey
             ' ; ': (36, 36, 36),   # blackish
             ' S ': (255, 0, 255),  # magenta
-            ' G ': (0, 128, 255)   # cyan
+            ' G ': (0, 128, 255),   # cyan
+            ' Y ': (255, 255, 0),  # yellow
         }
         # Go through image and set pixel color for every position
         for y in range(height):
@@ -445,11 +446,33 @@ def aStar(state: Map_Obj,start: Node, goal: Node):
             
             
 
-            
+def colorize_path(map: Map_Obj, path: list[list[int, int]]):
+    """Colorize the path on the map.
+
+    Parameters
+    ----------
+    map : Map_Obj
+        The map to colorize
+    path : list[list[int, int]]
+        The path to colorize
+    """
+    # print("Colorizing path...")
+    pos = map.get_start_pos()
+    for move in path:
+        # print("Moving {} from {} to {}".format(move,pos,[pos[0]+move[0],pos[1]+move[1]]))
+        pos = [pos[0] + move[0], pos[1] + move[1]]
+        map.set_cell_value(pos, ' Y ')
+    map.set_cell_value(map.get_goal_pos(), ' G ')
+    # print("Done colorizing path.")
 
 
 if __name__ == '__main__':
-    map_obj = Map_Obj(task=1)
+    map_obj = Map_Obj(task=2)
     start, goal = Node(map_obj.get_start_pos()), Node(map_obj.get_goal_pos())
-    print(aStar(map_obj,start, goal))
+    # print(aStar(map_obj,start, goal))
+    path = aStar(map_obj,start, goal)
+    colorize_path(map_obj, path)
+    print("Displaying map...")
     map_obj.show_map()
+    print("Done.")
+    # print(map_obj.str_map)
