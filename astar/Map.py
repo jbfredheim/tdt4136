@@ -394,7 +394,7 @@ class Node():
 
 moves = [[0,1],[0,-1],[1,0],[-1,0]] #up down right left
 
-def aStar(state: Map_Obj,start: Node, goal: Node):
+def aStar(state: Map_Obj,start: Node, goal: Node) -> list[list[int, int]]:
     debug = False
     print(start,goal)
     openlist = [start]
@@ -440,13 +440,14 @@ def aStar(state: Map_Obj,start: Node, goal: Node):
                     #print("Removing {} from closedlist as child with lower cost at same pos has been discovered".format(aNode))
                     closedlist.remove(aNode) #Remove node from closedlist
             child.h = (abs(child.pos[0]-goal.pos[0])+abs(child.pos[1]-goal.pos[1])) #Calculate h
-            child.cost = child.depth+child.h #Calculate cost
+            child.cost = child.depth+child.h+state.get_cell_value(child.pos) #Calculate cost
+            print(child.cost)
             #print("Appending {} to openlist at line 435".format(child)) 
             openlist.append(child) #Add child to openlist
             
             
 
-def colorize_path(map: Map_Obj, path: list[list[int, int]]):
+def colorize_path(map: Map_Obj, path: list[list[int, int]], color: str = 'Y'):
     """Colorize the path on the map.
 
     Parameters
@@ -461,18 +462,19 @@ def colorize_path(map: Map_Obj, path: list[list[int, int]]):
     for move in path:
         # print("Moving {} from {} to {}".format(move,pos,[pos[0]+move[0],pos[1]+move[1]]))
         pos = [pos[0] + move[0], pos[1] + move[1]]
-        map.set_cell_value(pos, ' Y ')
+        map.set_cell_value(pos, ' {} '.format(color))
     map.set_cell_value(map.get_goal_pos(), ' G ')
     # print("Done colorizing path.")
 
 
 if __name__ == '__main__':
-    map_obj = Map_Obj(task=2)
-    start, goal = Node(map_obj.get_start_pos()), Node(map_obj.get_goal_pos())
-    # print(aStar(map_obj,start, goal))
-    path = aStar(map_obj,start, goal)
-    colorize_path(map_obj, path)
-    print("Displaying map...")
-    map_obj.show_map()
-    print("Done.")
-    # print(map_obj.str_map)
+    for i in range(1,5): #For each task
+        map_obj = Map_Obj(task=i) #Generate a map object
+        start, goal = Node(map_obj.get_start_pos()), Node(map_obj.get_goal_pos()) #Get start and goal positions
+        # print(aStar(map_obj,start, goal))
+        path = aStar(map_obj,start, goal) #Get path of chosen moves from start to goal
+        colorize_path(map_obj, path) #Colorize the path on the map
+        print("Displaying map...")
+        map_obj.show_map() #Display map
+        print("Done.")
+        # print(map_obj.str_map)
