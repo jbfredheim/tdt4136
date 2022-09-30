@@ -150,9 +150,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         def min_agent(state, depth: int, agent: int):
             if state.isWin() or state.isLose():
                 return state.getScore()
-            next_agent = agent + 1
-            if agent == state.getNumAgents() - 1:
-                next_agent = 0
+            next_agent = (agent + 1) % state.getNumAgents()
             v = float("inf")
             for move in state.getLegalActions(agent):
                 if next_agent == 0:
@@ -165,7 +163,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 if v2 < v:
                     v = v2
             return v
-        
         
         return max_agent(gameState, 0)
 
@@ -197,9 +194,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         def min_value(state, depth: int, agent: int, alpha: int, beta: int):
             if state.isWin() or state.isLose():
                 return state.getScore()
-            next_agent = agent + 1
-            if agent == state.getNumAgents() - 1:
-                next_agent = 0
+            next_agent = (agent + 1) % state.getNumAgents()
             v = float("inf")
             for a in state.getLegalActions(agent):
                 if next_agent == 0:
