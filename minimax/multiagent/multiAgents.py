@@ -134,7 +134,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        def max_agent(state, depth: int):
+        def max_agent(state, depth: int) -> float | str:
             if state.isWin() or state.isLose():
                 return state.getScore()
             v = float("-inf")
@@ -147,7 +147,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             else:
                 return v
 
-        def min_agent(state, depth: int, agent: int):
+        def min_agent(state, depth: int, agent: int) -> float:
             if state.isWin() or state.isLose():
                 return state.getScore()
             next_agent = (agent + 1) % state.getNumAgents()
@@ -175,7 +175,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        def max_value(state, depth: int, alpha: int, beta: int):
+        def max_value(state, depth: int, alpha: int, beta: int) -> float | str:
             if state.isWin() or state.isLose():
                 return state.getScore()
             v = float("-inf")
@@ -191,7 +191,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             else:
                 return v
     
-        def min_value(state, depth: int, agent: int, alpha: int, beta: int):
+        def min_value(state, depth: int, agent: int, alpha: int, beta: int) -> float:
             if state.isWin() or state.isLose():
                 return state.getScore()
             next_agent = (agent + 1) % state.getNumAgents()

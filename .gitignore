@@ -1,3 +1,5 @@
 env/*
 **/*.pyc
 **/__pycache__/
+q2.txt
+q3.txt

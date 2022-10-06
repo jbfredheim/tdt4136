@@ -333,7 +333,7 @@ class Map_Obj():
         # (undefined values will remain yellow, this is
         # how the yellow path is painted)
         colors = {
-            ' # ': (211, 33, 45),  # redish
+            ' # ': (211, 43, 45),  # redish 
             ' . ': (215, 215, 215),  # whiteish
             ' , ': (166, 166, 166),  # lightgrey
             ' : ': (96, 96, 96),   # darkgrey
@@ -375,12 +375,10 @@ class Node():
         self.cost = 0
 
     def __repr__(self):
-        return 'N' + str(self.pos)
+        return 'Node at ' + str(self.pos)
     
-    def __hash__(self):
-        return hash(tuple(self.pos))
-    
-    def getPath(self):
+    def getPath(self) -> list[list[int,int]]:
+        """Trace back the path from the start to the current node."""
         moves = []
         aNode = self
         while(aNode.parent):
@@ -392,57 +390,45 @@ class Node():
     def simMove(self, move):
         return [self.pos[0] + move[0], self.pos[1] + move[1]]
 
-moves = [[0,1],[0,-1],[1,0],[-1,0]] #up down right left
+moves = [[0,1],[0,-1],[1,0],[-1,0]] #down up right left
 
 def aStar(state: Map_Obj,start: Node, goal: Node) -> list[list[int, int]]:
-    debug = False
+    debug = False #Set to true to print debug info
     print(start,goal)
     openlist = [start]
     closedlist = []
     it = 0
     while(openlist):
-        #print(it)
-        it+=1
+        it+=1 #Count iterations
         compare = 10000
         for node in openlist:
-            # import pdb; pdb.set_trace()
-            # print("Openlist {}".format(openlist))
-            # print("Node: {}".format(node))
             if node.cost < compare: #find the lowest cost node
                 compare = node.cost #set the lowest cost
                 aNode = node #set the node to the lowest cost node
             if debug:
-                print("DEBUG")
+                print("\n\n###########DEBUG############")
                 print("openlist: {}, node: {}".format(openlist,aNode))
                 print("Node@: {}, Move: {}, Parent: {}, Depth: {}, h: {}, cost: {}".format(aNode.pos,aNode.move,aNode.parent,aNode.depth,aNode.h,aNode.cost))
                 print("Attempting to move {} from open to closed".format(aNode))
                 print("END DEBUG")
-            # try:
         openlist.remove(aNode)
         closedlist.append(aNode)
-            # except:
-            #     import pdb; pdb.set_trace()
         for move in moves:
             child = Node([aNode.pos[0]+move[0],aNode.pos[1]+move[1]],move,aNode)
-            #print("New child {} spawned from {} using move {})".format(child,aNode,move))
+            if debug:
+                print("New child {} spawned from {} using move {})".format(child,aNode,move))
             if state.get_cell_value(child.pos) == -1: #if wall, skip iteration
                 continue
             if state.get_goal_pos() == child.pos: #if goal, return path
-                #print("Found goal! Now figure out printing the path")
                 return child.getPath()
             for aNode in openlist: #For each node in openlist
                 if aNode.pos == child.pos and child.cost < aNode.cost: #If child is in openlist and has lower cost
-                    # print("openlist: {}, node: {}".format(openlist,aNode))
-                    #print("Removing {} from openlist as a child with lower cost at same pos has been discovered".format(aNode))
                     openlist.remove(aNode) #Remove node from openlist
             for aNode in closedlist: #For each previously closed node
                 if aNode.pos == child.pos and child.cost < aNode.cost: #If child is in closedlist and has lower cost
-                    #print("Removing {} from closedlist as child with lower cost at same pos has been discovered".format(aNode))
                     closedlist.remove(aNode) #Remove node from closedlist
             child.h = (abs(child.pos[0]-goal.pos[0])+abs(child.pos[1]-goal.pos[1])) #Calculate h
             child.cost = child.depth+child.h+state.get_cell_value(child.pos) #Calculate cost
-            print(child.cost)
-            #print("Appending {} to openlist at line 435".format(child)) 
             openlist.append(child) #Add child to openlist
             
             
@@ -457,24 +443,17 @@ def colorize_path(map: Map_Obj, path: list[list[int, int]], color: str = 'Y'):
     path : list[list[int, int]]
         The path to colorize
     """
-    # print("Colorizing path...")
     pos = map.get_start_pos()
     for move in path:
-        # print("Moving {} from {} to {}".format(move,pos,[pos[0]+move[0],pos[1]+move[1]]))
         pos = [pos[0] + move[0], pos[1] + move[1]]
         map.set_cell_value(pos, ' {} '.format(color))
     map.set_cell_value(map.get_goal_pos(), ' G ')
-    # print("Done colorizing path.")
 
 
 if __name__ == '__main__':
     for i in range(1,5): #For each task
         map_obj = Map_Obj(task=i) #Generate a map object
         start, goal = Node(map_obj.get_start_pos()), Node(map_obj.get_goal_pos()) #Get start and goal positions
-        # print(aStar(map_obj,start, goal))
         path = aStar(map_obj,start, goal) #Get path of chosen moves from start to goal
         colorize_path(map_obj, path) #Colorize the path on the map
-        print("Displaying map...")
         map_obj.show_map() #Display map
-        print("Done.")
-        # print(map_obj.str_map)
