@@ -4,6 +4,7 @@
 
 import copy
 from itertools import product as prod
+from typing import List
 
 
 class CSP:
@@ -17,6 +18,8 @@ class CSP:
         # self.constraints[i][j] is a list of legal value pairs for
         # the variable pair (i, j)
         self.constraints = {}
+        
+        self.backtrack_calls = 0
 
     def add_variable(self, name: str, domain: list):
         """Add a new variable to the CSP.
@@ -32,7 +35,7 @@ class CSP:
         self.domains[name] = list(domain)
         self.constraints[name] = {}
 
-    def get_all_possible_pairs(self, a: list, b: list) -> list[tuple]:
+    def get_all_possible_pairs(self, a: list, b: list) -> List[tuple]:
         """Get a list of all possible pairs (as tuples) of the values in
         lists 'a' and 'b', where the first component comes from list
         'a' and the second component comes from list 'b'.
@@ -51,7 +54,7 @@ class CSP:
         """
         return prod(a, b)
 
-    def get_all_arcs(self) -> list[tuple]:
+    def get_all_arcs(self) -> List[tuple]:
         """Get a list of all arcs/constraints that have been defined in
         the CSP.
 
@@ -63,7 +66,7 @@ class CSP:
         """
         return [(i, j) for i in self.constraints for j in self.constraints[i]]
 
-    def get_all_neighboring_arcs(self, var: str) -> list[tuple]:
+    def get_all_neighboring_arcs(self, var: str) -> List[tuple]:
         """Get a list of all arcs/constraints going to/from variable 'var'.
 
         Parameters
@@ -141,7 +144,6 @@ class CSP:
         # Run AC-3 on all constraints in the CSP, to weed out all of the
         # values that are not arc-consistent to begin with
         self.inference(assignment, self.get_all_arcs())
-
         # Call backtrack with the partial assignment 'assignment'
         return self.backtrack(assignment)
 
@@ -169,8 +171,24 @@ class CSP:
         assignments and inferences that took place in previous
         iterations of the loop.
         """
-        # TODO: YOUR CODE HERE
-        pass
+        self.backtrack_calls+=1
+        if False: #debug
+            print(self.backtrack_calls)
+        if not any(len(assignment[var]) > 1 for var in assignment):
+            return assignment
+        var = self.select_unassigned_variable(assignment)
+        for value in assignment[var]:
+            state = copy.deepcopy(assignment)
+            state[var] = value
+            if self.inference(state, self.get_all_neighboring_arcs(var)):
+                result = self.backtrack(state)
+                if result:
+                    return result
+        return False
+                
+            # print("{}, {}".format(key, value))
+                
+        # pass
 
     def select_unassigned_variable(self, assignment):
         """The function 'Select-Unassigned-Variable' from the pseudocode
@@ -178,8 +196,7 @@ class CSP:
         in 'assignment' that have not yet been decided, i.e. whose list
         of legal values has a length greater than one.
         """
-        # TODO: YOUR CODE HERE
-        pass
+        return next(var for var in assignment if len(assignment[var]) > 1)
 
     def inference(self, assignment, queue):
         """The function 'AC-3' from the pseudocode in the textbook.
@@ -187,7 +204,22 @@ class CSP:
         the lists of legal values for each undecided variable. 'queue'
         is the initial queue of arcs that should be visited.
         """
-        pass
+        debug = False
+        if debug:
+            print("Nodes with values")
+            [print("{}: {}".format(node,value)) for node,value in assignment.items()]
+            print("\n\nQueue:")
+            [print(i) for i in queue if i[0] == '0-0']
+            print("\n\n")
+        while queue:
+            xi, xj = queue.pop(0)
+            if self.revise(assignment, xi, xj):
+                if not assignment[xi]:
+                    return False
+                for xk in self.get_all_neighboring_arcs(xi):
+                    if xk != xi:
+                        queue.append(xk)
+        return True
 
     def revise(self, assignment, i, j):
         """The function 'Revise' from the pseudocode in the textbook.
@@ -198,9 +230,13 @@ class CSP:
         between i and j, the value should be deleted from i's list of
         legal values in 'assignment'.
         """
-        # TODO: YOUR CODE HERE
-        pass
-
+        revised = False
+        for x in assignment[i]: #for each value in i's domain
+            if not any([x != y for y in assignment[j]]):
+                # print("removing {} from {}".format(x,i))
+                del assignment[i][assignment[i].index(x)]
+                revised = True
+        return revised
 
 def create_map_coloring_csp():
     """Instantiate a CSP representing the map coloring problem from the
@@ -277,5 +313,6 @@ def print_sudoku_solution(solution):
         if row == 2 or row == 5:
             print('------+-------+------')
 
-csp = create_sudoku_csp('easy.txt')
-csp.backtracking_search()
+csp = create_sudoku_csp('veryhard.txt')
+solution = csp.backtracking_search()
+print_sudoku_solution(solution)
